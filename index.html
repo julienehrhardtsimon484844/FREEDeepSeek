@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FREEDeepSeek - 免费DeepSeek对话（逆向API）</title>
+    <script src="https://cdn.staticfile.org/marked/9.1.2/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --bg-color: #eff6ff;
+            --chat-bg: #ffffff;
+            --user-msg-bg: #3b82f6;
+            --user-msg-text: #ffffff;
+            --ai-msg-bg: #ffffff;
+            --ai-msg-text: #334155;
+            --border-color: #dbeafe;
+            --ad-text-color: #94a3b8;
+            --code-bg: #f8fafc;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app-wrapper {
+            width: 100%;
+            height: 100%;
+            background-color: var(--chat-bg);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        @media (min-width: 800px) {
+            .app-wrapper {
+                max-width: 800px;
+                height: 90vh;
+                border-radius: 16px;
+                box-shadow: var(--shadow-lg);
+                border: 1px solid var(--border-color);
+            }
+        }
+
+        header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            letter-spacing: 0.5px;
+        }
+
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            scroll-behavior: smooth;
+            background-color: #fff;
+        }
+
+        .message-wrapper {
+            display: flex;
+            margin-bottom: 24px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .message-wrapper.user { justify-content: flex-end; }
+        .message-wrapper.ai { justify-content: flex-start; }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin: 0 10px;
+            flex-shrink: 0;
+            background-size: cover;
+            border: 1px solid var(--border-color);
+        }
+
+        .message-bubble {
+            max-width: 85%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .message-wrapper.user .message-bubble {
+            background-color: var(--user-msg-bg);
+            color: var(--user-msg-text);
+            border-bottom-right-radius: 4px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message-wrapper.ai .message-bubble {
+            background-color: var(--ai-msg-bg);
+            color: var(--ai-msg-text);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+            white-space: normal;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message-wrapper.ai .avatar { background-image: url('https://picsum.photos/seed/ai-agent/200/200'); }
+        .message-wrapper.user .avatar { background-image: url('https://picsum.photos/seed/user123/200/200'); }
+
+        .markdown-body {
+            color: inherit;
+            font-size: inherit;
+            line-height: inherit;
+        }
+        
+        .markdown-body p { margin-bottom: 0.8em; }
+        .markdown-body p:last-child { margin-bottom: 0; }
+        
+        .markdown-body code {
+            background-color: rgba(0,0,0,0.05);
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, "Andale Mono", monospace;
+            font-size: 0.9em;
+            color: #d946ef;
+        }
+
+        .message-wrapper.user .markdown-body code {
+            background-color: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
+        .markdown-body pre {
+            background-color: var(--code-bg);
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .markdown-body pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #334155;
+            font-size: 0.9em;
+        }
+
+        .markdown-body ul, .markdown-body ol {
+            padding-left: 20px;
+            margin-bottom: 0.8em;
+        }
+
+        .markdown-body blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding-left: 12px;
+            margin: 10px 0;
+            color: #64748b;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #64748b;
+            display: none; /* 默认隐藏，hover显示 */
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+            z-index: 2;
+        }
+
+        .copy-btn:hover {
+            background: #fff;
+            color: var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .message-wrapper.ai:hover .copy-btn { display: flex; }
+        
+        @media (max-width: 768px) {
+            .copy-btn { display: flex; }
+        }
+
+        .input-area {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-color);
+            background-color: #fff;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        textarea#user-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            resize: none;
+            height: 48px;
+            max-height: 150px;
+            outline: none;
+            font-size: 1rem;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+            box-shadow: none;
+        }
+
+        textarea#user-input:focus {
+            border-color: var(--primary-color);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        button#send-btn {
+            width: 48px;
+            height: 48px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        button#send-btn:hover { background-color: var(--primary-hover); transform: scale(1.05); }
+        button#send-btn:disabled { background-color: #cbd5e1; cursor: not-allowed; transform: none; }
+
+        .ad-banner {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.8rem;
+            color: var(--ad-text-color);
+            text-align: center;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .ad-banner a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .ad-banner a:hover { text-decoration: underline; }
+
+        .typing-indicator { display: inline-flex; gap: 4px; padding: 4px 0; }
+        .dot { width: 6px; height: 6px; background-color: #cbd5e1; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; } .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background-color: #ef4444;
+            color: white; padding: 10px 20px; border-radius: 24px; font-size: 0.9rem;
+            box-shadow: var(--shadow-lg); z-index: 1000; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="app-wrapper">
+        <header>
+            <h1>FREEDeepSeek</h1>
+        </header>
+
+        <div id="chat-container">
+            <div class="message-wrapper ai">
+                <div class="avatar"></div>
+                <div class="message-bubble">
+                    <div class="markdown-body">你好！我是 DeepSeeek。有什么需要帮助的吗？</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <textarea id="user-input" placeholder="发消息..."></textarea>
+                <button id="send-btn">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const DEFAULT_SYSTEM_PROMPT = "你是一个乐于助人、知识渊博的AI助手。请用简洁、专业的语言回答用户的问题。";
+
+        const state = { messages: [], isGenerating: false };
+        const elements = {
+            chatContainer: document.getElementById('chat-container'),
+            userInput: document.getElementById('user-input'),
+            sendBtn: document.getElementById('send-btn'),
+            toast: document.getElementById('toast')
+        };
+
+        function showToast(msg) {
+            elements.toast.textContent = msg;
+            elements.toast.classList.add('show');
+            setTimeout(() => elements.toast.classList.remove('show'), 3000);
+        }
+
+        function scrollToBottom() {
+            elements.chatContainer.scrollTop = elements.chatContainer.scrollHeight;
+        }
+
+        function buildApiUrl() {
+            const baseUrl = '/api/stream';
+            const apiMessages = [];
+            apiMessages.push(`system:${DEFAULT_SYSTEM_PROMPT}`);
+            state.messages.forEach(msg => {
+                const rolePrefix = msg.role === 'assistant' ? 'AI' : msg.role;
+                apiMessages.push(`${rolePrefix}:${msg.content}`);
+            });
+            const messageString = apiMessages.join('\n');
+            const messageParam = encodeURIComponent(messageString);
+            return `${baseUrl}?message=${messageParam}`;
+        }
+
+        function createAdBanner() {
+            const adDiv = document.createElement('div');
+            adDiv.className = 'ad-banner';
+            adDiv.innerHTML = `觉得好用请给个 <a href="https://github.com/wangshengithub/FREEDeepSeek" target="_blank">Star ⭐️</a> 支持一下`;
+            return adDiv;
+        }
+
+        function attachCopyListener(btn, text) {
+            btn.addEventListener('click', () => {
+                navigator.clipboard.writeText(text).then(() => {
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '已复制';
+                    btn.style.color = 'var(--primary-color)';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.style.color = '';
+                    }, 2000);
+                }).catch(err => {
+                    showToast('复制失败');
+                });
+            });
+        }
+
+        function createMessageElement(role, content = '') {
+            const wrapper = document.createElement('div');
+            wrapper.className = `message-wrapper ${role === 'user' ? 'user' : 'ai'}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            
+            let copyBtn = null;
+            if (role === 'ai') {
+                copyBtn = document.createElement('button');
+                copyBtn.className = 'copy-btn';
+                copyBtn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> 复制`;
+                bubble.appendChild(copyBtn);
+            }
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'markdown-body';
+            
+            if (role === 'ai' && !content) {
+                bubble.appendChild(contentDiv); 
+                contentDiv.innerHTML = `<div class="typing-indicator"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+            } else {
+                if (role === 'user') {
+                    contentDiv.textContent = content; 
+                    bubble.appendChild(contentDiv);
+                } else {
+                    bubble.appendChild(contentDiv);
+                    contentDiv.innerHTML = marked.parse(content);
+                }
+            }
+
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(bubble);
+            return { wrapper, bubble, contentDiv, copyBtn };
+        }
+
+        async function sendMessage() {
+            const content = elements.userInput.value.trim();
+            if (!content || state.isGenerating) return;
+
+            const cleanContent = content.replace(/\n/g, ' '); 
+
+            state.isGenerating = true;
+            elements.sendBtn.disabled = true;
+            elements.userInput.value = '';
+            elements.userInput.style.height = '48px';
+
+            const { wrapper: userMsgWrapper } = createMessageElement('user', cleanContent);
+            elements.chatContainer.appendChild(userMsgWrapper);
+            state.messages.push({ role: 'user', content: cleanContent });
+            scrollToBottom();
+
+            const { wrapper: aiMsgWrapper, bubble: aiBubble, contentDiv: aiContentDiv, copyBtn: aiCopyBtn } = createMessageElement('ai');
+            elements.chatContainer.appendChild(aiMsgWrapper);
+            scrollToBottom();
+
+            try {
+                const url = buildApiUrl();
+                const response = await fetch(url);
+
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+                aiContentDiv.innerHTML = '';
+                let fullAiContent = '';
+                
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    buffer += chunk;
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine.startsWith('data:')) {
+                            const jsonStr = trimmedLine.substring(5).trim();
+                            if (jsonStr === 'end') break;
+
+                            try {
+                                const data = JSON.parse(jsonStr);
+                                if (data.content) {
+                                    fullAiContent += data.content;
+                                    aiContentDiv.innerHTML = marked.parse(fullAiContent);
+                                    scrollToBottom();
+                                }
+                            } catch (e) { console.warn('Parse error', e); }
+                        }
+                    }
+                }
+                aiBubble.appendChild(createAdBanner());
+                attachCopyListener(aiCopyBtn, fullAiContent);
+                state.messages.push({ role: 'assistant', content: fullAiContent });
+
+            } catch (error) {
+                console.error(error);
+                showToast('请求失败: ' + error.message);
+                aiContentDiv.textContent = '发生错误，请检查网络或后端服务。';
+                aiContentDiv.style.color = 'red';
+            } finally {
+                state.isGenerating = false;
+                elements.sendBtn.disabled = false;
+                elements.userInput.focus();
+            }
+        }
+        elements.sendBtn.addEventListener('click', sendMessage);
+        elements.userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { 
+                e.preventDefault(); 
+                sendMessage(); 
+            }
+        });
+        elements.userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if(this.value === '') this.style.height = '48px';
+        });
+    </script>
+</body>
+</html>
